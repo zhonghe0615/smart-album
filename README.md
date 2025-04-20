@@ -96,8 +96,11 @@ These instructions will help you set up a local development environment to run t
    ```
 
 3. **Upload a photo and generate music:**
-
    - Use the interface to upload a photo.
+   - Experience searching for photos by atmosphere, emotion, or action.
+   ![image](https://github.com/user-attachments/assets/ed09caf7-52f6-43eb-b419-10fc17453073)
+   ![image](https://github.com/user-attachments/assets/5cbab5c4-08c2-475b-97e7-cef294cd0c76)
+
    - Click the "Generate Music" button to create a music track.
    - Listen to the generated music and download it if desired.
 
