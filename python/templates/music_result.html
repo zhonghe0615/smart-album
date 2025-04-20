@@ -1,0 +1,66 @@
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Music Play</title>
+    <style>
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .action-button {
+            display: inline-block;
+            background-color: #ff69b4;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease;
+        }
+        .action-button:hover {
+            background-color: #ff4081;
+        }
+    </style>
+</head>
+<body>
+    <h2>Generated Music</h2>
+
+    <audio controls autoplay style="width: 100%; margin-top: 1rem;">
+      <source src="{{ url_for('static', filename='audio/' + filename + '.mp3') }}" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+    <p><a href="{{ url_for('static', filename='audio/' + filename + '.mp3') }}" download>Download MP3</a></p>
+
+    <p><strong>Prompt:</strong> {{ prompt }}</p>
+
+    <img src="{{ url_for('static', filename='uploads/' + image_filename) }}"
+      alt="Uploaded photo"
+      style="max-width: 100%; display: block; margin: 1rem auto; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+
+    <div class="button-row">
+        <a href="/" class="action-button">← Back to Home</a>
+    </div>
+
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        const shouldPlay = sessionStorage.getItem("play_music");
+        if (shouldPlay === "true") {
+          const audio = document.querySelector('audio');
+          if (audio) {
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => console.log("🎵 Playback success"))
+                .catch(err => console.warn("⚠️ Auto playback blocked:", err));
+            }
+          }
+          sessionStorage.removeItem("play_music");
+        }
+      });
+    </script>
+</body>

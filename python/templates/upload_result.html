@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Result</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 1rem;
+        }
+        .container {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+            border-radius: 10px;
+        }
+        .meta {
+            margin: 0.5rem 0;
+            color: #555;
+            font-size: 1rem;
+        }
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .action-button {
+            display: inline-block;
+            background-color: #ff69b4;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease;
+        }
+        .action-button:hover {
+            background-color: #ff4081;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Successful!</h1>
+        <img src="{{ url_for('static', filename='thumbnails/' + filename) }}" alt="Thumbnail of Uploaded Photo">
+        <div class="meta"><strong>Description:</strong> {{ description }}</div>
+        <div class="meta"><strong>Keywords:</strong> {{ keywords }}</div>
+        <div class="meta"><strong>Emotion:</strong> {{ emotion }}</div>
+        <div class="meta"><strong>Action:</strong> {{ action }}</div>
+
+        <div class="button-row">
+            <a href="/" class="action-button">← Back to Home</a>
+            <a href="/" class="action-button">➕ Upload Another</a>
+        </div>
+    </div>
+</body>
+</html>

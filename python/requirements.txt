@@ -1,0 +1,11 @@
+flask
+transformers==4.39.3
+torch
+pillow
+spacy
+opencv-python
+mediapipe
+deepface
+jinja2
+setuptools==65.5.1
+ml-dtypes==0.3.1

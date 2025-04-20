@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Search Photos</h1>
+    <form action="/search" method="get">
+        <input type="text" name="q" placeholder="Enter keyword..." value="{{ query }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <hr>
+
+    {% if photos %}
+        <ul>
+        {% for photo in photos %}
+            <li>
+                <img src="{{ url_for('static', filename='uploads/' + photo['filename']) }}" width="200"><br>
+                <strong>Keywords:</strong> {{ photo['keywords'] }}<br>
+                <strong>Emotion:</strong> {{ photo['emotion'] }}<br>
+                <strong>Action:</strong> {{ photo['action'] }}<br>
+                <strong>Description:</strong> {{ photo['description'] }}
+            </li>
+            <hr>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No photos found matching <b>{{ query }}</b>.</p>
+    {% endif %}
+</body>
+</html>

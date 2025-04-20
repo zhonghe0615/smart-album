@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Photo Album</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link rel="icon" href="/static/icon.png" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background-color: #f9f9fb;
+    }
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    h1 img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+
+    .form-block {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 480px;
+      width: 100%;
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 0.5rem;
+      justify-content: space-between;;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      font-size: 1rem;
+      padding: 0.4rem;
+      min-width: 0;
+    }
+
+    input[type="file"] {
+      font-size: 0.6rem;
+      padding: 0.1rem 0.1rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    input[type="file"]::file-selector-button {
+      background-color: #e0e0e0;
+      color: #333;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+      background-color: #d5d5d5;
+    }
+
+    .btn {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+    .generate-btn {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 4px;
+    }
+
+    .photo {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      max-width: 480px;
+    }
+
+    .photo img {
+      width: 100%;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+    }
+
+    .meta {
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    mark {
+      background-color: #ffe58f;
+      padding: 0 4px;
+      border-radius: 3px;
+    }
+    .upload-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.15rem;
+        flex-wrap: nowrap;
+        width: 100%;
+    }
+    .upload-row .btn {
+        margin-left: 0.05rem; /* ✅ 挨近 input */
+    }
+    .search-form {
+        margin-bottom: 2rem;
+    }
+    .loading-text .dots::after {
+        content: '';
+        animation: dots 1s steps(3, end) infinite;
+    }
+    .spinner {
+        width: 10px;
+        height: 10px;
+        border: 2px solid #ccc;
+        border-top: 2px solid #ff5722;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+        margin-left: 0.5rem;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>
+    <img src="/static/icon.png" alt="icon" />
+    Smart Album
+  </h1>
+
+  <div class="form-block">
+    <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+        <div class="form-row upload-row">
+          <input type="file" name="file" accept="image/*" required />
+          <button type="submit" class="btn">Upload</button>
+        </div>
+        <div class="form-row">
+            <span id="loading-text" class="loading-text" style="display: none;">🤖 AI is working<span class="dots"></span></span>
+            <span id="loading-spinner" class="spinner" style="display: none;"></span>
+        </div>
+    </form>
+  
+    <form method="get" class="search-form" id="search-form">
+        <div class="form-row">
+          <input type="text" id="search-input" name="q" value="{{ query or '' }}" placeholder="Search your photos by keyword, emotion..." />
+          <button type="submit" class="btn">Search</button>
+          <button type="button" class="btn" onclick="clearSearch()">Clear</button>
+        </div>
+    </form>
+    <!-- ✅ 在这里插入来源提示 -->
+    {% if query and source_label %}
+    <div style="margin: -1rem 0 1.5rem 0; font-size: 0.9rem; color: #555; background: #f0f0f0; padding: 8px 12px; border-left: 4px solid #888;">
+    🔍 <strong>{{ source_label }}</strong>
+    </div>
+    {% endif %}
+  </div>
+  
+
+  {% for photo in photos %}
+  <div class="photo">
+     <img src="{{ url_for('static', filename='thumbnails/' + photo['filename']) }}"
+     alt="photo"
+     style="max-width: 100%; max-height: 240px; object-fit: cover; cursor: zoom-in;"
+     onclick="showFullscreenImage('{{ url_for('static', filename='uploads/' + photo['filename']) }}')" />
+ 
+    {% set q = query|default('', true) %}
+    {% if q|length >= 2 %}
+      {% set highlighted = photo['description']|replace(q, '<mark>' ~ q ~ '</mark>') %}
+      <div class="meta"><strong>Description:</strong> {{ highlighted|safe }}</div>
+    {% else %}
+      <div class="meta"><strong>Description:</strong> {{ photo['description'] }}</div>
+    {% endif %}
+    <div class="meta"><strong>Keywords:</strong> {{ photo['keywords'] }}</div>
+    <div class="meta"><strong>Emotion:</strong> {{ photo['emotion'] }}</div>
+    <div class="meta"><strong>Action:</strong> {{ photo['action'] }}</div>
+    <form class="generate-music-form" action="/generate_music" method="post" style="margin-top: 0.5rem;">
+      <input type="hidden" name="filename" value="{{ photo['filename'] }}">
+      <button type="submit" class="generate-btn" id="generate-btn-{{ photo['filename'] }}">🎵 Generate Music</button>
+      <span id="loading-spinner-music-{{ photo['filename'] }}" class="spinner" style="display: none;"></span>
+    </form>    
+  </div>
+  {% endfor %}
+  <!-- Image viewer modal -->
+  <div id="image-modal" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.85); justify-content:center; align-items:center;">
+    <!-- ❌ Close button -->
+    <div style="position: absolute; top: 20px; right: 30px; font-size: 2rem; color: white; cursor: pointer; z-index: 10000;" onclick="closeImageModal()">×</div>
+  
+    <!-- Full-size image -->
+    <img id="modal-image" src="" alt="Full size"
+         style="max-width:90%; max-height:90%; box-shadow: 0 0 16px #000; border-radius: 6px;" />
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('upload-form');
+        const loadingText = document.getElementById('loading-text');
+        const spinner = document.getElementById('loading-spinner');
+        const uploadButton = form.querySelector('button[type="submit"]');
+
+        form.addEventListener('submit', function () {
+            loadingText.style.display = 'inline';
+            spinner.style.display = 'inline-block';
+            uploadButton.disabled = true;
+            uploadButton.style.opacity = 0.5;
+        });
+    });
+
+    function showFullscreenImage(src) {
+        const modal = document.getElementById('image-modal');
+        const img = document.getElementById('modal-image');
+        img.src = src;
+        modal.style.display = 'flex';
+    }
+
+    function closeImageModal() {
+        document.getElementById('image-modal').style.display = 'none';
+    }
+
+    document.getElementById('image-modal').addEventListener('click', function() {
+        this.style.display = 'none';
+    });
+
+    function clearSearch() {
+        const input = document.getElementById('search-input');
+        input.value = '';
+        document.getElementById('search-form').submit();
+    }
+    const form = document.getElementById('generate-music-form');
+    const button = document.getElementById('generate-btn');
+    const spinner = document.getElementById('loading-spinner-music');
+
+    document.querySelectorAll('.generate-music-form').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        //event.preventDefault(); // Prevent default form submission for demonstration
+        sessionStorage.setItem("play_music", "true");
+        const spinner = form.querySelector('.spinner');
+        const btn = form.querySelector('button');
+
+        // Show the spinner and disable the button
+        if (spinner) {
+          spinner.style.display = 'inline-block';
+        }
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Generating...';
+        }
+
+        // Add a status message if not already present
+        if (!form.querySelector('.music-status-msg')) {
+          const message = document.createElement('p');
+          message.className = 'music-status-msg';
+          message.textContent = '🎵 BGM is cooking...';
+          message.style.fontWeight = 'bold';
+          message.style.color = '#444';
+          message.style.marginTop = '0.5rem';
+          form.appendChild(message);
+        }
+
+        // Simulate form submission delay
+        setTimeout(() => {
+          if (spinner) {
+            spinner.style.display = 'none';
+          }
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '🎵 Generate Music';
+          }
+        }, 2000); // Adjust the timeout as needed
+      });
+    });
+  </script>
+</body>
+</html>

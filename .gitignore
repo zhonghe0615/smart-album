@@ -1,0 +1,6 @@
+*.db
+.DS_Store
+.env
+python/static/*/
+python/uploads/*
+.python-version
