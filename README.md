@@ -4,8 +4,11 @@ A playful online photo album that lets you share your photos with friends and en
 
 ## Key Features
 ![image](https://github.com/user-attachments/assets/edc6b4ec-bdbb-4ac2-8fc9-47463b4acfab)
+
 ![image](https://github.com/user-attachments/assets/7cd6ac0e-a27f-4db5-b7f8-9421dde999b1)
-![image](https://github.com/user-attachments/assets/f8c8dac1-3a99-439e-95e2-97a04a055877)
+
+![image](https://github.com/user-attachments/assets/cbc14243-d894-44ec-8ab8-4917dffdf3a7)
+
 
 - **Semantic Search with Embedding Optimization**: Photos uploaded to the application are optimized using embedding techniques, enabling intelligent semantic search capabilities. This allows users to search for photos not just by keywords, but by the underlying semantic meaning.
   
