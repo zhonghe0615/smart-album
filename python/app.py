@@ -24,7 +24,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 THUMBNAIL_FOLDER = 'static/thumbnails'
 os.makedirs(THUMBNAIL_FOLDER, exist_ok=True)
 
-# 初始化数据库
+# Initialize the database
 DB_PATH = 'photo_metadata.db'
 
 def init_db():
@@ -42,12 +42,12 @@ def init_db():
         conn.commit()
     print(" * Database initialized")
 
-# 初始化 GPT
+# Initialize GPT
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
-embedding_dim = 1536  # text-embedding-3-small 输出维度
+embedding_dim = 1536  # Output dimension of text-embedding-3-small
 faiss_index = faiss.IndexFlatL2(embedding_dim)
-id_mapping = []  # 用于记录数据库中 photo.id 与 faiss 向量位置的对应关系
+id_mapping = []  # Used to record the mapping between photo.id in the database and the position of the faiss vector
 
 def generate_embedding(text):
     response = openai.Embedding.create(
@@ -86,7 +86,7 @@ def analyze_image(image_path):
 
     raw_content = response["choices"][0]["message"]["content"]
 
-    # 👉 自动剥离 Markdown 中的 ```json 包裹
+    # Automatically strip Markdown wrapped with ```json
     match = re.search(r"```json\\s*(.*?)\\s*```", raw_content, re.DOTALL)
     if match:
         cleaned_json = match.group(1)
@@ -102,8 +102,8 @@ def analyze_image(image_path):
     except Exception as e:
         description = raw_content
         keywords = []
-        emotion = "由GPT综合判断"
-        action = "由GPT综合判断"
+        emotion = "Judged comprehensively by GPT"
+        action = "Judged comprehensively by GPT"
 
     return description, keywords, emotion, action
 
@@ -208,13 +208,13 @@ def upload_file():
     filename = file.filename
     file_bytes = file.read()
 
-    # ✅ 先计算哈希值（基于内存）
+    # First calculate the hash value (based on memory)
     file_hash = hashlib.md5(file_bytes).hexdigest()
 
     ext = os.path.splitext(file.filename)[1] or '.jpg'
     filename = file_hash + ext
 
-    # ✅ 检查数据库中是否有同样的图片
+    # Check if there is the same image in the database
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
         existing = conn.execute("SELECT id FROM photos WHERE file_hash = ?", (file_hash,)).fetchone()
@@ -227,19 +227,18 @@ def upload_file():
                                emotion="—",
                                action="—")
 
-    # ✅ 保存文件（首次出现的图片才写入磁盘）
+    # Save the file (only write to disk for the first occurrence of the image)
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     with open(file_path, 'wb') as f:
-        f.write(file_bytes)# 原图保存完之后
+        f.write(file_bytes)  # After saving the original image
 
-
-    # ✅ 保存缩略图
+    # Save the thumbnail
     thumb_path = os.path.join(THUMBNAIL_FOLDER, filename)
     create_thumbnail(file_path, thumb_path)
 
-    # 分析图像并保存记录
+    # Analyze the image and save the record
     description, keywords, emotion, action = analyze_image(file_path)
-    # ✅ 写入主表 + FTS
+    # Write to the main table + FTS
     save_photo_metadata(filename, description, keywords, emotion, action, file_hash)
 
     load_faiss_index()
@@ -269,7 +268,7 @@ def generate_music():
     prompt = f"A {row['emotion']} instrumental track inspired by: {row['keywords']}. Scene: {row['description']}"
 
     # 调用音乐生成 API
-    music_data = call_stable_audio(prompt)  # 你需要实现这个方法
+    music_data = call_stable_audio(prompt) 
 
     # 保存音乐文件
     music_filename = os.path.splitext(filename)[0]
@@ -314,7 +313,7 @@ def call_stable_audio(prompt):
     url = "https://api.stability.ai/v2beta/audio/stable-audio-2/text-to-audio"
     headers = {
         "Authorization": f"Bearer {os.getenv('STABLE_AUDIO_API_KEY')}",
-        "Accept": "audio/*"  # ✅ 直接拿到音频文件
+        "Accept": "audio/*"  # Directly get the audio file
     }
 
     files = {
@@ -332,14 +331,12 @@ def call_stable_audio(prompt):
     print("Content-Type:", response.headers.get("Content-Type"))
     print("Size:", len(response.content))
 
-
-    return response.content  # MP3 音频文件
-
+    return response.content  # MP3 audio file
 
 
 def create_thumbnail(input_path, output_path, size=(300, 300)):
     with Image.open(input_path) as img:
-        img = ImageOps.exif_transpose(img)  # ✅ 自动根据 EXIF 旋转
+        img = ImageOps.exif_transpose(img)  # Automatically rotate according to EXIF
         img.thumbnail(size)
         img.save(output_path)
 
@@ -347,11 +344,11 @@ def debug_faiss_search(query):
     import sqlite3
     import numpy as np
 
-    # 查询所有 embedding 和描述
+    # Query all embeddings and descriptions
     with sqlite3.connect(DB_PATH) as conn:
         rows = conn.execute("SELECT id, filename, description, emotion, action, keywords, embedding FROM photos").fetchall()
 
-    print("\n📸 当前数据库内容:")
+    print("\n📸 Current database content:")
     id_map = {}
     for row in rows:
         pid = row[0]
@@ -365,18 +362,18 @@ def debug_faiss_search(query):
             id_map[pid] = vec
 
     if not id_map:
-        print("❌ 没有有效的 embedding，可能是保存失败")
+        print("❌ No valid embedding, possibly failed to save")
         return
 
-    # 查询语义向量
+    # Query semantic vector
     query_vec = generate_embedding(query)
     D, I = faiss_index.search(np.array([query_vec], dtype=np.float32), k=5)
 
-    print("\n🔍 搜索词 =", query)
-    print("  FAISS 返回的索引 =", I[0])
-    print("  与之对应的图片 ID =", [id_mapping[i] for i in I[0]])
+    print("\n🔍 Search term =", query)
+    print("  FAISS returned index =", I[0])
+    print("  Corresponding photo IDs =", [id_mapping[i] for i in I[0]])
 
-    print("\n🧠 匹配的图片信息:")
+    print("\n🧠 Matched photo information:")
     for i in I[0]:
         photo_id = id_mapping[i]
         row = next(r for r in rows if r[0] == photo_id)
