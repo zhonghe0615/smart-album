@@ -1,6 +1,6 @@
 # Smart Album
 
-A playful online photo album that lets you share your photos with friends and enhance the fun by adding personalized background music to each picture.
+A playful LLM-backed online photo album that lets you share your photos with friends and enhance the fun by adding personalized background music to each picture.
 
 ## Key Features
 
